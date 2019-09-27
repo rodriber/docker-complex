@@ -1,6 +1,6 @@
 const keys = require('./keys');
 
-// Expres App setup
+// Express App setup
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 // Postgres Client Setup
 const { Pool } = require('pg');
 const pgClient = new Pool({
-    user: keys.pgDatabase,
+    user: keys.pgUser,
     host: keys.pgHost,
     database: keys.pgDatabase,
     password: keys.pgPassword,
@@ -21,7 +21,7 @@ const pgClient = new Pool({
 pgClient.on('error', () => console.log('Conexion PG perdida'));
 
 pgClient
-    .query('CREATE TABLE IF NOT EXISTS values (numbre INT)')
+    .query('CREATE TABLE IF NOT EXISTS values (number INT)')
     .catch(err => console.log(err));
 
 // Redis Client Setup
@@ -33,7 +33,7 @@ const redisClient = redis.createClient({
 });
 const redisPublisher = redisClient.duplicate();
 
-// Expres route handlers
+// Express route handlers
 
 app.get('/', (req, res) => {
     res.send('Hola')
@@ -45,13 +45,13 @@ app.get('/values/all', async (req, res) => {
     res.send(values.rows);
 });
 
-app.get('/values/current', async (res, req) => {
+app.get('/values/current', async (req, res) => {
     redisClient.hgetall('values', (err, values) => {
         res.send(values);
     });
 });
 
-app.post('/values', async (res, req) => {
+app.post('/values', async (req, res) => {
     const index = req.body.index;
 
     if(parseInt(index) > 40){
